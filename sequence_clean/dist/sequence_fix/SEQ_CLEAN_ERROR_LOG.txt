@@ -1,0 +1,4 @@
+Date: 2013-10-03 14:56:18.111747
+
+Error: Could not find file 'seq_clean_settings.txt' in /home/aaron/Documents/Wesleyan/Fred_lab/sequence_clean/sequence_clean/dist/sequence_fix
+

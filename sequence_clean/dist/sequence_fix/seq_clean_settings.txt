@@ -1,0 +1,4 @@
+edit_test.nwk
+1Edited and shortened 3Sept_Aligned 31Aug.fas
+cleaned_fasta.fas
+clean_seq_log.txt
