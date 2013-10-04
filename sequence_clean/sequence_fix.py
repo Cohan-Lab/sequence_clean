@@ -2,6 +2,7 @@ import closest_rel
 import random
 import time
 import datetime
+import os
 
 
 ##T5c10 has underscore, have to specify some params in closest_rel so things
@@ -188,7 +189,7 @@ def replacer(newick_file,dct):
         s_num += 1
 
     log = {'Strains analyzed':str(dct.keys()),
-           'Number of strains':str(len(dct.keys())),
+           'Number of strains in Newick Tree':str(len(dct.keys())),
            'Number of column removals':str(c_removals),
            'Number of gap replacements':str(g_replacements),
            'Number of irregular base replacements':str(base_replacements)}
@@ -212,15 +213,41 @@ def logging(logs,log_name):
     f_out.write(string)
     f_out.close()
 
+def import_settings():
+    """Imports settings from file. Expects a newick file, a fasta file, 
+        a name for the new fasta file, and a name for the log file
+    THE SETTINGS FILE MUST BE CALLED 'seq_clean_settings.txt' and must be in 
+    the current directory! If not found, will write to log file that it can't find
+    settings in CWD.
+        """
+    try:
+        f_in = open('seq_clean_settings.txt','r')
+        newick_file,fasta_file,fasta_out,log_name = f_in.readlines()
+        settings = [newick_file,fasta_file,fasta_out,log_name]
+        settings = [i.strip() for i in settings]
+        return settings
+    except:
+        return False
 
-
-def main(newick_file,fasta_file,fasta_out,log_name):
+def main():
     """
     newick_file: name of newick file corrosponding to the fasta file
     fasta_file: fasta file to analyze
     fasta_out: name for the new fasta file with a .fas at the end
     log_name: name for the log file with a .txt at the end
     """
+    settings = import_settings()
+    if settings:
+        try:
+            newick_file,fasta_file,fasta_out,log_name = settings
+        except:
+            logging({"Error":"Could not find all required settings in 'seq_clean_settings.txt' in "+os.getcwd()},
+                "-- NEED: newick file, fasta file, new fasta file name, new log name. Each should be entered on a new line in the specified order",
+                "SEQ_CLEAN_ERROR_LOG.txt")
+            return
+    else:
+        logging({"Error":"Could not find file 'seq_clean_settings.txt' in "+os.getcwd()},"SEQ_CLEAN_ERROR_LOG.txt")
+        return
     start = time.time()
     fasta_string = import_fasta('1Edited and shortened 3Sept_Aligned 31Aug.fas')
     fasta_dict = read_fasta(fasta_string)
@@ -229,8 +256,8 @@ def main(newick_file,fasta_file,fasta_out,log_name):
     elapsed = time.time()-start
     fasta_to_file(new_fasta_dict,fasta_out)
     logs['Run time'] = str(elapsed)+" seconds"
+    logs['Number of strains in fasta file'] = str(len(fasta_dict))
     logging(logs,log_name)
 
 
-main('edit_test.nwk','1Edited and shortened 3Sept_Aligned 31Aug.fas',
-    'cleaned_fasta.fas','clean_seq_log.txt')
+main()
