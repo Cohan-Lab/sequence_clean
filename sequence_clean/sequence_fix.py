@@ -83,7 +83,8 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
             else:
                 nucs[nucleotide] = 1
         except:
-            print r[0],"IS A PROBLEM STRAIN, KEY ERROR!"
+            print r,index,len(strain_dct)
+            print r[11111111111110],"IS A PROBLEM STRAIN, KEY ERROR!"
             # pass
         # else:
         #     print "FALSE",r
@@ -95,7 +96,7 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
             for i in range(nucs[z]):
                 pop.append(z)
     if not pop:
-        # print "Nothing was an A,T,G,C, have to go up the tree#############################3a"  
+        print "Nothing was an A,T,G,C, have to go up the tree#############################3a"  
         ##Have to get the parent of the parent of the strain
         ##HOW MANY TIMES SHOULD THIS BE REPEATED??
         ##MAKE SURE THIS IS ACTUALLY WORKING/GOING UP THE TREE MORE THAN ONCE
@@ -131,11 +132,12 @@ def replacer(newick_file,dct):
     c_removals = 0
     g_replacements = 0
     base_replacements = 0
+    print orig_dct.keys()
     
     for strain in dct.keys():
-        # print "STRAIN NUMBER",s_num
+        print "STRAIN NUMBER",s_num
         index = 0
-        # print "STRAIN ("+strain+")",dct[strain]
+        print "STRAIN ("+strain+")",dct[strain]
         rels = [closest_rel.closest_relative(tree,strain)]
         if type(rels[0]) == tuple:
             #for case of just one relative
@@ -161,7 +163,7 @@ def replacer(newick_file,dct):
                         old_seq[index] = closest
                         dct[strain] = "".join(old_seq)
                         g_replacements += 1
-                        # print "DCTCLS: ",dct[strain]
+                        print "DCTCLS: ",dct[strain]
                     else:
                         print "FOUND NO CLOSEST RELATIVE EVER...?"
                     index += 1
@@ -183,6 +185,7 @@ def replacer(newick_file,dct):
                     old_seq[index] = closest
                     dct[strain] = "".join(old_seq)
                     base_replacements += 1
+                    print dct[strain]
                 index += 1  
             else:
                 index += 1  
@@ -249,7 +252,7 @@ def main():
         logging({"Error":"Could not find file 'seq_clean_settings.txt' in "+os.getcwd()},"SEQ_CLEAN_ERROR_LOG.txt")
         return
     start = time.time()
-    fasta_string = import_fasta('1Edited and shortened 3Sept_Aligned 31Aug.fas')
+    fasta_string = import_fasta(fasta_file)
     fasta_dict = read_fasta(fasta_string)
     fasta_dict_copy = fasta_dict.copy()
     new_fasta_dict,logs = replacer(newick_file,fasta_dict_copy)
