@@ -4,7 +4,7 @@ from operator import itemgetter
 import time
 
 
-###OPTIMIZATION-- don't remake the tree every time!! Just pass it.
+###OPTIMIZATION-- don't remake the rtee every time!! Just pass it.
 #####QUESTION -- should i recalc parents every time? If i don't right now
 ##it'll affect the weighted average sequence, which might not be the best thing.
 #could just do a list of parent levels and go through each level as needed?

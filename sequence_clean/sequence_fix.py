@@ -69,8 +69,8 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
 
     start = time.time()
     nucs = {}
-    if not rels[0]:
-        print "NO RELATIVES!!!!!!!!!!!!!!!!!!!!!!!!!"
+    # if not rels[0]:
+    #     print "NO RELATIVES!!!!!!!!!!!!!!!!!!!!!!!!!"
     # print rels,"RELATIVES"
     # print rels,"RELS"
     # print level,"LEVEL",rels[level]
@@ -83,9 +83,9 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
             else:
                 nucs[nucleotide] = 1
         except:
-            print r,index,len(strain_dct)
-            print r[11111111111110],"IS A PROBLEM STRAIN, KEY ERROR!"
-            # pass
+            # print r,index,len(strain_dct)
+            # print r[11111111111110],"IS A PROBLEM STRAIN, KEY ERROR!"
+            pass
         # else:
         #     print "FALSE",r
     # print nucs,"NUCS DCT"
@@ -96,7 +96,7 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
             for i in range(nucs[z]):
                 pop.append(z)
     if not pop:
-        print "Nothing was an A,T,G,C, have to go up the tree#############################3a"  
+        # print "Nothing was an A,T,G,C, have to go up the tree#############################3a"  
         ##Have to get the parent of the parent of the strain
         ##HOW MANY TIMES SHOULD THIS BE REPEATED??
         ##MAKE SURE THIS IS ACTUALLY WORKING/GOING UP THE TREE MORE THAN ONCE
@@ -124,7 +124,7 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
     # print "weighted_seq_choose took",time.time()-start
     return choice,rels
 
-def replacer(newick_file,dct):
+def replacer(newick_file,dct,cutoff):
     tree = closest_rel.tree_from_string(newick_file)
     orig_dct = dct.copy()
     bad_list = []
@@ -132,12 +132,12 @@ def replacer(newick_file,dct):
     c_removals = 0
     g_replacements = 0
     base_replacements = 0
-    print orig_dct.keys()
+    # print orig_dct.keys()
     
     for strain in dct.keys():
-        print "STRAIN NUMBER",s_num
+        # print "STRAIN NUMBER",s_num
         index = 0
-        print "STRAIN ("+strain+")",dct[strain]
+        # print "STRAIN ("+strain+")",dct[strain]
         rels = [closest_rel.closest_relative(tree,strain)]
         if type(rels[0]) == tuple:
             #for case of just one relative
@@ -149,7 +149,7 @@ def replacer(newick_file,dct):
         for nuc in sequence_copy:
             if nuc == '-':
                 p_gaps = percent_gap(dct,index)
-                if p_gaps <= .15:
+                if p_gaps <=  cutoff:
                     if strain_node == "":
                         strain_node = closest_rel.strain_to_node(tree,strain)
                     # print "Strain_node!!",strain_node
@@ -163,7 +163,7 @@ def replacer(newick_file,dct):
                         old_seq[index] = closest
                         dct[strain] = "".join(old_seq)
                         g_replacements += 1
-                        print "DCTCLS: ",dct[strain]
+                        # print "DCTCLS: ",dct[strain]
                     else:
                         print "FOUND NO CLOSEST RELATIVE EVER...?"
                     index += 1
@@ -185,13 +185,14 @@ def replacer(newick_file,dct):
                     old_seq[index] = closest
                     dct[strain] = "".join(old_seq)
                     base_replacements += 1
-                    print dct[strain]
+                    # print dct[strain]
                 index += 1  
             else:
                 index += 1  
         s_num += 1
 
     log = {'Strains analyzed':str(dct.keys()),
+            'Cutoff percentage':str(cutoff),
            'Number of strains in Newick Tree':str(len(dct.keys())),
            'Number of column removals':str(c_removals),
            'Number of gap replacements':str(g_replacements),
@@ -225,8 +226,8 @@ def import_settings():
         """
     try:
         f_in = open('seq_clean_settings.txt','r')
-        newick_file,fasta_file,fasta_out,log_name = f_in.readlines()
-        settings = [newick_file,fasta_file,fasta_out,log_name]
+        newick_file,fasta_file,cutoff,fasta_out,log_name = f_in.readlines()
+        settings = [newick_file,fasta_file,cutoff,fasta_out,log_name]
         settings = [i.strip() for i in settings]
         return settings
     except:
@@ -236,16 +237,18 @@ def main():
     """
     newick_file: name of newick file corrosponding to the fasta file
     fasta_file: fasta file to analyze
+    cutoff: percentage (i.e. .1 = 10%) under which closest relative replacement will occur. 
+        if above, remove the column.
     fasta_out: name for the new fasta file with a .fas at the end
     log_name: name for the log file with a .txt at the end
     """
     settings = import_settings()
     if settings:
         try:
-            newick_file,fasta_file,fasta_out,log_name = settings
+            newick_file,fasta_file,cutoff,fasta_out,log_name = settings
         except:
             logging({"Error":"Could not find all required settings in 'seq_clean_settings.txt' in "+os.getcwd()},
-                "-- NEED: newick file, fasta file, new fasta file name, new log name. Each should be entered on a new line in the specified order",
+                "-- NEED: newick file, fasta file, cutoff, new fasta file name, new log name. Each should be entered on a new line in the specified order",
                 "SEQ_CLEAN_ERROR_LOG.txt")
             return
     else:
@@ -255,7 +258,7 @@ def main():
     fasta_string = import_fasta(fasta_file)
     fasta_dict = read_fasta(fasta_string)
     fasta_dict_copy = fasta_dict.copy()
-    new_fasta_dict,logs = replacer(newick_file,fasta_dict_copy)
+    new_fasta_dict,logs = replacer(newick_file,fasta_dict_copy,cutoff)
     elapsed = time.time()-start
     fasta_to_file(new_fasta_dict,fasta_out)
     logs['Run time'] = str(elapsed)+" seconds"
@@ -264,3 +267,26 @@ def main():
 
 
 main()
+
+# cutoffs = [.001,.0025,.005,.01,.02,.03,.04,.05,.06,.07,.08,.09,.1,.11,.12,.13,.14,.15,
+#             .16,.17,.18,.19,.20]
+
+# def cutoff_trials(fasta_file,newick_file,cutoffs):
+#     ite = 0
+#     for t in cutoffs:
+#         print "running with time",t
+#         filename = str(cutoffs[ite]) + " clean_cut_test.fas"
+#         start = time.time()
+#         fasta_string = import_fasta(fasta_file)
+#         fasta_dict = read_fasta(fasta_string)
+#         fasta_dict_copy = fasta_dict.copy()
+#         new_fasta_dict,logs = replacer(newick_file,fasta_dict_copy,t)
+#         elapsed = time.time()-start
+#         fasta_to_file(new_fasta_dict,filename)
+#         logs['Run time'] = str(elapsed)+" seconds"
+#         logs['Number of strains in fasta file'] = str(len(fasta_dict))
+#         logging(logs,str(cutoffs[ite]) + " LOG")
+#         ite+=1
+
+
+# cutoff_trials('23 Oct with outgroup (fromAligned 31Aug).fas','MLtree from23 Oct with outgroup (fromAligned 31Aug).nwk',cutoffs)
