@@ -132,7 +132,7 @@ def replacer(newick_file,dct,cutoff):
     c_removals = 0
     g_replacements = 0
     base_replacements = 0
-    # print orig_dct.keys()
+    print orig_dct.keys()
     
     for strain in dct.keys():
         # print "STRAIN NUMBER",s_num
@@ -226,9 +226,15 @@ def import_settings():
         """
     try:
         f_in = open('seq_clean_settings.txt','r')
-        newick_file,fasta_file,cutoff,fasta_out,log_name = f_in.readlines()
+        lines = f_in.readlines()
+        newick_file = lines[0]
+        fasta_file = lines[1]
+        cutoff = lines[2]
+        fasta_out = lines[3]
+        log_name = lines[4]
         settings = [newick_file,fasta_file,cutoff,fasta_out,log_name]
         settings = [i.strip() for i in settings]
+        settings[2] = float(settings[2])
         return settings
     except:
         return False
@@ -243,6 +249,7 @@ def main():
     log_name: name for the log file with a .txt at the end
     """
     settings = import_settings()
+    print settings
     if settings:
         try:
             newick_file,fasta_file,cutoff,fasta_out,log_name = settings
@@ -258,6 +265,7 @@ def main():
     fasta_string = import_fasta(fasta_file)
     fasta_dict = read_fasta(fasta_string)
     fasta_dict_copy = fasta_dict.copy()
+    print newick_file,type(cutoff)
     new_fasta_dict,logs = replacer(newick_file,fasta_dict_copy,cutoff)
     elapsed = time.time()-start
     fasta_to_file(new_fasta_dict,fasta_out)
@@ -268,13 +276,12 @@ def main():
 
 main()
 
-# cutoffs = [.001,.0025,.005,.01,.02,.03,.04,.05,.06,.07,.08,.09,.1,.11,.12,.13,.14,.15,
-#             .16,.17,.18,.19,.20]
+# cutoffs = [.1]
 
 # def cutoff_trials(fasta_file,newick_file,cutoffs):
 #     ite = 0
 #     for t in cutoffs:
-#         print "running with time",t
+#         print "running with cutoff",t
 #         filename = str(cutoffs[ite]) + " clean_cut_test.fas"
 #         start = time.time()
 #         fasta_string = import_fasta(fasta_file)
