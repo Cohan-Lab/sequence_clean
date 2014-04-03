@@ -69,13 +69,7 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
 
     start = time.time()
     nucs = {}
-    # if not rels[0]:
-    #     print "NO RELATIVES!!!!!!!!!!!!!!!!!!!!!!!!!"
-    # print rels,"RELATIVES"
-    # print rels,"RELS"
-    # print level,"LEVEL",rels[level]
     for r in rels[level]:
-        # if r[0] == True:
         try:
             nucleotide = strain_dct[r[0]][index]
             if nucleotide in nucs:
@@ -83,12 +77,7 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
             else:
                 nucs[nucleotide] = 1
         except:
-            # print r,index,len(strain_dct)
-            # print r[11111111111110],"IS A PROBLEM STRAIN, KEY ERROR!"
             pass
-        # else:
-        #     print "FALSE",r
-    # print nucs,"NUCS DCT"
 
     pop = []
     for z in nucs:
@@ -96,32 +85,18 @@ def weighted_seq_choose(strain_dct,strain_node,rels,index,level=0):
             for i in range(nucs[z]):
                 pop.append(z)
     if not pop:
-        # print "Nothing was an A,T,G,C, have to go up the tree#############################3a"  
         ##Have to get the parent of the parent of the strain
         ##HOW MANY TIMES SHOULD THIS BE REPEATED??
         ##MAKE SURE THIS IS ACTUALLY WORKING/GOING UP THE TREE MORE THAN ONCE
-        # try:
         try:
-            # print "already have"
             rels_next = rels[level+1]
-            # print "got next, need parent now"
             parent2 = closest_rel.get_parent(strain_node)
-            # print "got parent2"
         except:
-            # print "need new"
             rels_next,parent2 = closest_rel.get_parents_parent_relatives(strain_node)  
             rels.append(rels_next)
-        # print parent2,strain_node 
-        # print rels,"I AM NEW RELS AT LEVEL",level
         return weighted_seq_choose(strain_dct,parent2,rels,index,level+1)
-        # except:
-        #     ######WHAT SHOULD HAPPEN IN THIS CASE? Second pass?##########
-        #     print "No parent"
-        #     return None
-    # print pop,"POP"
+
     choice = random.choice(pop)
-    # print rels
-    # print "weighted_seq_choose took",time.time()-start
     return choice,rels
 
 def replacer(newick_file,dct,cutoff):
@@ -135,9 +110,7 @@ def replacer(newick_file,dct,cutoff):
     print orig_dct.keys()
     
     for strain in dct.keys():
-        # print "STRAIN NUMBER",s_num
         index = 0
-        # print "STRAIN ("+strain+")",dct[strain]
         rels = [closest_rel.closest_relative(tree,strain)]
         if type(rels[0]) == tuple:
             #for case of just one relative
@@ -152,7 +125,6 @@ def replacer(newick_file,dct,cutoff):
                 if p_gaps <=  cutoff:
                     if strain_node == "":
                         strain_node = closest_rel.strain_to_node(tree,strain)
-                    # print "Strain_node!!",strain_node
 
                     closest,rels = weighted_seq_choose(orig_dct,strain_node,rels,index)
                     ###Could optimize this bit here, save closest relatives and just do op once, index later
@@ -163,29 +135,21 @@ def replacer(newick_file,dct,cutoff):
                         old_seq[index] = closest
                         dct[strain] = "".join(old_seq)
                         g_replacements += 1
-                        # print "DCTCLS: ",dct[strain]
                     else:
                         print "FOUND NO CLOSEST RELATIVE EVER...?"
                     index += 1
                 else:
-                    # print "REMOVING COLUMN"
-                    # print "a:",dct[strain]
                     dct = remove_column(dct,index)
                     orig_dct = remove_column(orig_dct,index)
                     c_removals += 1
-                    # print dct == orig_dct
-                    # print "b:",dct[strain]
             elif nuc not in ["A","T","G","C"]:
-                # print "DOING REPLACEMENT"
                 strain_node = closest_rel.strain_to_node(tree,strain)
-                # print "Strain_node!!",strain_node
                 closest,rels = weighted_seq_choose(orig_dct,strain_node,rels,index)
                 if closest:
                     old_seq = list(dct[strain])
                     old_seq[index] = closest
                     dct[strain] = "".join(old_seq)
                     base_replacements += 1
-                    # print dct[strain]
                 index += 1  
             else:
                 index += 1  
